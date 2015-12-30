@@ -82,16 +82,13 @@
 #define N2 16
 #define N1 32
 
-
-// TODO: Declare BPM and have a call system using only delay and on/off.
-// So do logic based on a 32nd note length and then delay + on/off
 struct square_wave_player
 {
   // The pin that the buzzer is on
   int pin;
   // Length of a thirty second note, in milliseconds
   int thirty_second_note_length;
-  // Points The current note being played
+  // Points to the current note being played
   int note_ptr;
   // Amount of 32nd notes left in the note.
   int note_length_left;
@@ -116,7 +113,7 @@ void swp_init(int pin, int bpm, double* note_freqs, int* note_lengths, int note_
   swp.note_count = note_list_length;
 }
 
-void swp_play()
+void swp_play(void (*functionPtr)()) 
 {
   // A whole cycle has passed
   swp.note_length_left--;
@@ -127,6 +124,11 @@ void swp_play()
     swp.note_length_left = swp.note_lengths[swp.note_ptr];
     tone(swp.pin,swp.note_freqs[swp.note_ptr]); 
   }
-  delay(swp.thirty_second_note_length);
+  unsigned long start_update_time = millis();
+  while(start_update_time + ((unsigned long)swp.thirty_second_note_length) > millis() )
+  {
+    (*functionPtr)();
+    delay(1);
+  }
 }
 
